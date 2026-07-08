@@ -6,6 +6,7 @@ import {
   Bot,
   ClipboardList,
   LayoutDashboard,
+  Link2,
   Megaphone,
   PackageSearch,
   Settings,
@@ -19,6 +20,7 @@ import AiPage from './pages/AiPage.vue'
 import DashboardPage from './pages/DashboardPage.vue'
 import DataPage from './pages/DataPage.vue'
 import MonitoringPage from './pages/MonitoringPage.vue'
+import OnboardingPage from './pages/OnboardingPage.vue'
 import OrdersPage from './pages/OrdersPage.vue'
 import ProductsPage from './pages/ProductsPage.vue'
 import SettingsPage from './pages/SettingsPage.vue'
@@ -29,6 +31,7 @@ const currentPage = ref('dashboard')
 
 const pages = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, component: DashboardPage },
+  { key: 'onboarding', label: '接入中心', icon: Link2, component: OnboardingPage },
   { key: 'stores', label: '店铺管理', icon: Store, component: StoresPage },
   { key: 'products', label: '商品中心', icon: PackageSearch, component: ProductsPage },
   { key: 'orders', label: '订单中心', icon: ShoppingBag, component: OrdersPage },

@@ -390,7 +390,8 @@ h2 {
 }
 
 .dashboard-grid,
-.data-grid {
+.data-grid,
+.access-grid {
   display: grid;
   grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
   gap: 14px;
@@ -740,8 +741,122 @@ h2 {
   background: var(--surface);
 }
 
+.access-form {
+  display: grid;
+  gap: 12px;
+}
+
+.access-form label {
+  display: grid;
+  gap: 7px;
+}
+
+.access-form label span,
+.check-item span {
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.access-form input,
+.access-form select,
+.access-form textarea {
+  min-height: 40px;
+  padding: 0 11px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface);
+}
+
+.access-form textarea {
+  min-height: 88px;
+  padding: 10px 11px;
+}
+
+.form-row,
+.check-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.check-item {
+  display: flex !important;
+  grid-template-columns: none;
+  align-items: center;
+  gap: 8px !important;
+  min-height: 38px;
+  padding: 0 10px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-soft);
+}
+
+.step-list {
+  display: grid;
+  gap: 12px;
+}
+
+.step-list div {
+  display: grid;
+  grid-template-columns: 32px minmax(0, 1fr);
+  gap: 5px 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-soft);
+}
+
+.step-list i {
+  display: grid;
+  grid-row: span 2;
+  width: 30px;
+  height: 30px;
+  place-items: center;
+  border-radius: 7px;
+  color: var(--primary);
+  background: #e7f0fa;
+}
+
+.step-list p {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.connector-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.connector-card {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+  background: var(--surface-soft);
+}
+
+.connector-card span,
+.connector-card p,
+.connector-card small {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.connector-card p,
+.connector-card small {
+  grid-column: 1 / -1;
+}
+
 .table-panel {
   overflow: auto;
+}
+
+.table-panel.compact table {
+  min-width: 760px;
 }
 
 table {
@@ -1057,6 +1172,8 @@ pre {
   .filters.single,
   .dashboard-grid,
   .data-grid,
+  .access-grid,
+  .connector-grid,
   .ai-layout,
   .country-grid,
   .monitor-grid {
@@ -1093,5 +1210,10 @@ pre {
     width: 100%;
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .form-row,
+  .check-grid {
+    grid-template-columns: 1fr;
   }
 }

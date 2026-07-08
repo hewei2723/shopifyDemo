@@ -22,6 +22,34 @@ const tasks = ref(clone(tasksSeed))
 const integrations = ref(clone(integrationsSeed))
 const settingsRows = ref(clone(settingsRowsSeed))
 
+const connectors = ref([
+  { key: 'shopify', name: 'Shopify 店铺', vendor: 'Shopify', status: '可接入', connected: 386, owner: '运营', description: '接入店铺、商品、订单、库存、Webhook' },
+  { key: 'google-ads', name: 'Google Ads 账号', vendor: 'Google', status: '可接入', connected: 97, owner: '广告', description: '接入广告系列、花费、转化、ROAS' },
+  { key: 'ga4', name: 'GA4 Property', vendor: 'Google Analytics', status: '可接入', connected: 386, owner: '数据', description: '接入访问、事件、漏斗、归因数据' },
+  { key: 'meta', name: 'Meta Ads 账号', vendor: 'Meta', status: '待配置', connected: 15, owner: '广告', description: '接入广告组、素材、Purchase 事件' },
+  { key: 'erp', name: 'ERP / 供应商', vendor: 'ERP', status: '待配置', connected: 4, owner: '采购', description: '接入成本、采购、补货、供应商库存' },
+  { key: 'logistics', name: '物流平台', vendor: 'Logistics', status: '可接入', connected: 8, owner: '物流', description: '接入运单、妥投、异常件、时效' },
+])
+
+const accessRequests = ref([
+  { id: 'REQ-1021', type: 'Shopify 店铺', target: 'us-beauty-prime.myshopify.com', owner: 'Alice', status: '已完成', step: '完成同步' },
+  { id: 'REQ-1022', type: 'Google Ads 账号', target: 'CA Outdoor Ads', owner: 'Noah', status: '授权中', step: '等待 OAuth 回调' },
+  { id: 'REQ-1023', type: 'GA4 Property', target: 'DE Auto Kit GA4', owner: 'Lena', status: '校验失败', step: '缺少事件权限' },
+])
+
+const onboardingForm = ref({
+  type: 'Shopify 店铺',
+  storeDomain: 'new-demo-store.myshopify.com',
+  country: '美国',
+  owner: '运营A',
+  currency: 'USD',
+  syncProducts: true,
+  syncOrders: true,
+  syncInventory: true,
+  bindGoogleAds: true,
+  note: '新站点，先接商品、订单、库存，广告账号后续绑定。',
+})
+
 const selectedStores = ref(['US-001', 'UK-012'])
 const selectedProducts = ref(['SKU-1001', 'SKU-1004'])
 const storeSearch = ref('')
@@ -29,6 +57,7 @@ const storeCountry = ref('全部')
 const storeStatus = ref('全部')
 const productSearch = ref('')
 const taskSeed = ref(9008)
+const requestSeed = ref(1023)
 const activityFeed = ref([])
 const aiInput = ref('找出今天利润下降的店铺并给出处理建议')
 const aiResult = ref('')
@@ -96,6 +125,91 @@ function createTask(name, target, duration = 7000) {
       clearInterval(interval)
     }
   }, duration / 8)
+}
+
+function startAccessRequest() {
+  const form = onboardingForm.value
+  const request = {
+    id: `REQ-${++requestSeed.value}`,
+    type: form.type,
+    target: form.type === 'Shopify 店铺' ? form.storeDomain : `${form.owner} 的${form.type}`,
+    owner: form.owner,
+    status: '授权中',
+    step: '生成授权链接',
+  }
+  accessRequests.value.unshift(request)
+  createTask(`接入${form.type}`, request.target, 5600)
+  addActivity(`${request.target} 已提交接入申请`)
+
+  setTimeout(() => {
+    request.step = '校验权限与 Webhook'
+  }, 900)
+
+  setTimeout(() => {
+    request.status = '同步中'
+    request.step = '同步基础数据'
+  }, 1800)
+
+  setTimeout(() => {
+    request.status = '已完成'
+    request.step = '完成同步'
+    completeAccess(form)
+  }, 3200)
+}
+
+function completeAccess(form) {
+  if (form.type === 'Shopify 店铺') {
+    const nextNumber = String(stores.value.length + 1).padStart(3, '0')
+    const countryPrefix = {
+      美国: 'US',
+      英国: 'UK',
+      加拿大: 'CA',
+      德国: 'DE',
+      日本: 'JP',
+      法国: 'FR',
+      澳大利亚: 'AU',
+    }[form.country] || 'GL'
+
+    stores.value.unshift({
+      id: `${countryPrefix}-${nextNumber}`,
+      name: form.storeDomain.replace('.myshopify.com', ''),
+      country: form.country,
+      manager: form.owner,
+      status: '在线',
+      sales: 0,
+      profit: 0,
+      adSpend: 0,
+      roas: 0,
+      orders: 0,
+      alerts: 0,
+      inventory: form.syncInventory ? 100 : 0,
+      api: '正常',
+    })
+
+    connectors.value.find((item) => item.key === 'shopify').connected += 1
+    if (form.bindGoogleAds) {
+      accessRequests.value.unshift({
+        id: `REQ-${++requestSeed.value}`,
+        type: 'Google Ads 账号',
+        target: `${form.storeDomain} Ads`,
+        owner: form.owner,
+        status: '待授权',
+        step: '等待广告人员授权',
+      })
+    }
+  }
+
+  if (form.type === 'Google Ads 账号') {
+    connectors.value.find((item) => item.key === 'google-ads').connected += 1
+  }
+
+  addActivity(`${form.type} 接入完成：${form.storeDomain}`)
+}
+
+function retryAccess(request) {
+  request.status = '授权中'
+  request.step = '重新生成授权链接'
+  createTask(`重试接入 ${request.type}`, request.target, 4200)
 }
 
 function toggleStore(id) {
@@ -230,6 +344,9 @@ export function usePlatformDemo() {
     tasks,
     integrations,
     settingsRows,
+    connectors,
+    accessRequests,
+    onboardingForm,
     selectedStores,
     selectedProducts,
     storeSearch,
@@ -252,6 +369,8 @@ export function usePlatformDemo() {
     bestStores,
     addActivity,
     createTask,
+    startAccessRequest,
+    retryAccess,
     toggleStore,
     toggleProduct,
     selectVisibleStores,
