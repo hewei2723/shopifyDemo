@@ -5,6 +5,7 @@ import {
   BarChart3,
   Bot,
   ClipboardList,
+  MonitorUp,
   LayoutDashboard,
   Link2,
   Megaphone,
@@ -19,6 +20,7 @@ import AdsPage from './pages/AdsPage.vue'
 import AiPage from './pages/AiPage.vue'
 import DashboardPage from './pages/DashboardPage.vue'
 import DataPage from './pages/DataPage.vue'
+import ExecutiveScreen from './pages/ExecutiveScreen.vue'
 import MonitoringPage from './pages/MonitoringPage.vue'
 import OnboardingPage from './pages/OnboardingPage.vue'
 import OrdersPage from './pages/OrdersPage.vue'
@@ -31,6 +33,7 @@ const currentPage = ref('dashboard')
 
 const pages = [
   { key: 'dashboard', label: 'Dashboard', icon: LayoutDashboard, component: DashboardPage },
+  { key: 'executive', label: '老板大屏', icon: MonitorUp, component: ExecutiveScreen, fullscreen: true },
   { key: 'onboarding', label: '接入中心', icon: Link2, component: OnboardingPage },
   { key: 'stores', label: '店铺管理', icon: Store, component: StoresPage },
   { key: 'products', label: '商品中心', icon: PackageSearch, component: ProductsPage },
@@ -46,6 +49,7 @@ const pages = [
 const { tasks, activeAlerts, activityFeed, createTask } = usePlatformDemo()
 
 const currentComponent = computed(() => pages.find((page) => page.key === currentPage.value)?.component || DashboardPage)
+const isFullscreen = computed(() => pages.find((page) => page.key === currentPage.value)?.fullscreen)
 
 function setPage(pageKey) {
   currentPage.value = pageKey
@@ -53,7 +57,9 @@ function setPage(pageKey) {
 </script>
 
 <template>
+  <component v-if="isFullscreen" :is="currentComponent" :set-page="setPage" />
   <AppShell
+    v-else
     :pages="pages"
     :current-page="currentPage"
     :task-count="tasks.length"
